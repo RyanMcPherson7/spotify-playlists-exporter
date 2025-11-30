@@ -1,5 +1,4 @@
 const axios = require('axios')
-require('dotenv').config()
 
 /**
  * @param {Object} error
@@ -46,49 +45,56 @@ const getBearerToken = async () => {
 }
 
 /**
- * @param {string} artistId
  * @param {string} bearerToken
- * @returns artist data for specified artistId
+ * @param {string} userId
+ * @param {number} limit - max number of playlists to return, max is 50
+ * @param {number} offset - playlist offset from the first, default is 0
+ * @returns limit number of playlists from a particular user
  */
-const getArtist = async (artistId, bearerToken) => {
-  try {
-    const token = bearerToken
+const getPlaylistsByUser = async (
+  bearerToken,
+  userId,
+  limit = 50,
+  offset = 0,
+) => {
+  const res = await axios({
+    method: 'get',
+    url: `https://api.spotify.com/v1/users/${userId}/playlists?limit=${limit}&offset=${offset}`,
+    headers: {
+      Authorization: `Bearer ${bearerToken}`,
+    },
+  })
 
-    const res = await axios({
-      method: 'get',
-      url: `https://api.spotify.com/v1/artists/${artistId}`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-
-    return res.data
-  } catch (err) {
-    logError(err)
-  }
+  return res.data.items
 }
 
 /**
- * @param {string} artistId
  * @param {string} bearerToken
- * @returns related artists list for specified artistId
+ * @param {string} playlistId
+ * @param {number} limit - max number of playlists to return, max is 50
+ * @param {number} offset - playlist offset from the first, default is 0
+ * @returns limit number of playlist tracks from a particular playlist, explicitly only
+ *          returns date added, song name, and artists
  */
-const getRelatedArtists = async (artistId, bearerToken) => {
-  try {
-    const token = bearerToken
+const getPlaylistTracks = async (
+  bearerToken,
+  playlistId,
+  limit = 50,
+  offset = 0,
+) => {
+  // items(added_at,track(name,artists(name)))
+  const fieldsFilter =
+    'items%28added_at%2Ctrack%28name%2Cartists%28name%29%29%29'
 
-    const res = await axios({
-      method: 'get',
-      url: `https://api.spotify.com/v1/artists/${artistId}/related-artists`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
+  const res = await axios({
+    method: 'get',
+    url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks?fields=${fieldsFilter}&limit=${limit}&offset=${offset}`,
+    headers: {
+      Authorization: `Bearer ${bearerToken}`,
+    },
+  })
 
-    return res.data
-  } catch (err) {
-    logError(err)
-  }
+  return res.data.items
 }
 
-module.exports = { getBearerToken, getArtist, getRelatedArtists }
+module.exports = { getBearerToken, getPlaylistsByUser, getPlaylistTracks }
