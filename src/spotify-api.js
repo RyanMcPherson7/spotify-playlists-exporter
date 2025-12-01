@@ -82,9 +82,7 @@ const getPlaylistTracks = async (
   limit = 50,
   offset = 0,
 ) => {
-  // items(added_at,track(name,artists(name)))
-  const fieldsFilter =
-    'items%28added_at%2Ctrack%28name%2Cartists%28name%29%29%29'
+  const fieldsFilter = encodeURIComponent('items(added_at,track(name,artists(name)))')
 
   const res = await axios({
     method: 'get',

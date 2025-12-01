@@ -1,5 +1,9 @@
 require('dotenv').config()
-const { getAllPlaylistsByUser } = require('./src/util')
+const fs = require('fs')
+const {
+  getAllPlaylistsByUser,
+  getAndExportPlaylistTracks,
+} = require('./src/util')
 const { getBearerToken } = require('./src/spotify-api')
 
 const main = async () => {
@@ -10,15 +14,25 @@ const main = async () => {
     process.env.USER_ID,
     50,
   )
-}
 
-// TODO: each file should be created under a folder named with today's date
-// TODO: for each playlist in list
-// TODO: create a file named after the playlist
-// TODO: while there's content from the track requests
-// TODO: for each track in response
-// TODO: create structure and append to new list
-// TODO: write the structured list.join('')
-// TODO: increment offset
+  const now = new Date()
+  const date = `${now.getMonth() + 1}-${now.getDate()}-${now.getFullYear()}`
+  const folderName = `./spotify-playlists-${date}`
+  fs.mkdirSync(folderName)
+
+  await Promise.all(
+    playlists.map((playlist) =>
+      getAndExportPlaylistTracks(
+        bearerToken,
+        playlist.id,
+        playlist.name,
+        folderName,
+        50,
+      ),
+    ),
+  )
+
+  console.log('\nSuccessfully extracted all playlist tracks, happy listening :D')
+}
 
 main()
