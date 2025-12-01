@@ -8,7 +8,7 @@ Tool to export Spotify playlist content to `.csv` files. Extracts the name, arti
 4. Create a `.env` folder in the project root with the following variables
     1. `CLIENT_ID` - from [Spotify developer console](https://developer.spotify.com/)
     2. `CLIENT_SECRET` - from [Spotify developer console](https://developer.spotify.com/)
-    3. `USER_ID` - Spotify user id, find this by navigating to your profile in the spotify web player and observing the URL path
+    3. `USER_ID` - Spotify user id, find this by navigating to your profile in the Spotify web player and observing the URL path
 6. Run `npm i`
 7. Run `npm run start`
 8. Output folder is located in the root of the project folder and is called `spotify-playlists-<date>`
