@@ -66,6 +66,8 @@ const getAllPlaylistsByUser = async (
   return playlists
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
 /**
  * fetches all tracks for a playlist and writes the name, artists, and added date to a file
  * @param {string} bearerToken
@@ -90,18 +92,30 @@ const getAndExportPlaylistTracks = async (
   const tracks = []
 
   while (hasMoreTracks) {
-    const res = await getPlaylistTracks(
+    let res = []
+    res = await getPlaylistTracks(
       bearerToken,
       playlistId,
       trackLimitPerRequest,
       trackOffset,
     )
 
-    if (res.length === 0) {
+    if (res.status === 200) {
+      trackOffset += trackLimitPerRequest
+    } else {
+      console.log(
+        `${playlistName} - ${res.status}, ${res.message} -> sleeping for ${res.retryAfterSeconds}s 😴`,
+      )
+
+      await sleep(res.retryAfterSeconds * 1000)
+      continue
+    }
+
+    if (res.data.length === 0) {
       hasMoreTracks = false
     }
 
-    res.forEach((track) => {
+    res.data.forEach((track) => {
       let artists = ''
       track.track.artists.forEach((artist) => {
         artists += artist.name + ', '
@@ -110,8 +124,6 @@ const getAndExportPlaylistTracks = async (
 
       tracks.push(`"${track.track.name}","${artists}","${track.added_at}"\n`)
     })
-
-    trackOffset += trackLimitPerRequest
   }
 
   // write tracks to file

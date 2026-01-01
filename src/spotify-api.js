@@ -82,17 +82,30 @@ const getPlaylistTracks = async (
   limit = 50,
   offset = 0,
 ) => {
-  const fieldsFilter = encodeURIComponent('items(added_at,track(name,artists(name)))')
+  const fieldsFilter = encodeURIComponent(
+    'items(added_at,track(name,artists(name)))',
+  )
 
-  const res = await axios({
-    method: 'get',
-    url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks?fields=${fieldsFilter}&limit=${limit}&offset=${offset}`,
-    headers: {
-      Authorization: `Bearer ${bearerToken}`,
-    },
-  })
+  let res = {}
+  try {
+    res = await axios({
+      method: 'get',
+      url: `https://api.spotify.com/v1/playlists/${playlistId}/tracks?fields=${fieldsFilter}&limit=${limit}&offset=${offset}`,
+      headers: {
+        Authorization: `Bearer ${bearerToken}`,
+      },
+    })
+  } catch (error) {
+    return {
+      ...error.response.data.error,
+      retryAfterSeconds: error.response.headers['retry-after'],
+    }
+  }
 
-  return res.data.items
+  return {
+    status: 200,
+    data: res.data.items,
+  }
 }
 
 module.exports = { getBearerToken, getPlaylistsByUser, getPlaylistTracks }
